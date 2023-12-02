@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Day2
 {
-    public class Solution
+    public class Day2
     {
         Dictionary<string, int> maxColorsLoaded = new Dictionary<string, int>()
         {
@@ -15,13 +15,11 @@ namespace Day2
             { "green", 13 },
             { "blue", 14 }
         };
-        public int Part1()
+        public int Part1(string[] inputLines)
         {
-            var fileName = Environment.CurrentDirectory + "/Input.txt";
-            var lines = File.ReadAllLines(fileName);
             int answer = 0;
 
-            foreach (var line in lines)
+            foreach (var line in inputLines)
             {
                 var loadedColors = new Dictionary<string, int>();
                 var splittedline = line.Split(';');
@@ -53,13 +51,11 @@ namespace Day2
         }
 
 
-        public int Part2()
+        public int Part2(string[] inputLines)
         {
-            var fileName = Environment.CurrentDirectory + "/Input.txt";
-            var lines = File.ReadAllLines(fileName);
             int answer = 0;
 
-            foreach (var line in lines)
+            foreach (var line in inputLines)
             {
                 var loadedColors = new Dictionary<string, int>();
                 var splittedline = line.Split(';');
