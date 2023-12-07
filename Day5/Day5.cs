@@ -269,7 +269,6 @@ namespace Day5
 
         public BigInteger Part2(string[] input)
         {
-            var answer = 0;
             List<BigInteger> seeds = new List<BigInteger>();
             var seedsRange = Regex.Matches(input[0], @"\d+").ToList().Select(x => Int64.Parse(x.Value)).ToList();
 
@@ -284,18 +283,6 @@ namespace Day5
                 });
                 c++;
             }
-
-            //for(int c = 0; c < seedsRange.Count; c++)
-            //{
-            //    Console.WriteLine($"c: {c}");
-            //    for (BigInteger i = 0; i < seedsRange[c+1]; i++)
-            //    {
-            //        seeds.Add(seedsRange[c] + i);
-            //    }
-            //    c++;
-            //}
-
-
             for (int i = 1; i < input.Length; i++)
             {
                 var startLine = input[i];
@@ -458,8 +445,7 @@ namespace Day5
                 }
             }
 
-            Int64 lowest = 0; //79874952
-
+            Int64 lowest = 1; 
             while (true)
             {
                 var seedNr = checkLocationToSeed(lowest);
