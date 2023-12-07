@@ -16,16 +16,14 @@ namespace Day5
         public Int64 rangeLength { get; set; }
     }
 
+    public class SeedRange
+    {
+        public Int64 Start { get; set; }
+        public Int64 End { get; set; }
+    }
+
     public class Day5
     {
-        //public Dictionary<BigInteger, BigInteger> seedToSoil = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> soilToFertilizer = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> fertilizerToWater = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> waterToLight = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> lightToTemp = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> tempToHumidity = new Dictionary<BigInteger, BigInteger>();
-        //public Dictionary<BigInteger, BigInteger> himidityToLocation = new Dictionary<BigInteger, BigInteger>();
-
         public List<Converter> seedToSoilConv = new List<Converter>();
         public List<Converter> soilToFertilizer = new List<Converter>();
         public List<Converter> fertilizerToWater = new List<Converter>();
@@ -33,12 +31,8 @@ namespace Day5
         public List<Converter> lightToTemp = new List<Converter>();
         public List<Converter> tempToHumidity = new List<Converter>();
         public List<Converter> himidityToLocation = new List<Converter>();
-        //public Converter soilToFertilizer = new Converter();
-        //public Converter fertilizerToWater = new Converter();
-        //public Converter waterToLight = new Converter();
-        //public Converter lightToTemp = new Converter();
-        //public Converter tempToHumidity = new Converter();
-        //public Converter himidityToLocation = new Converter();
+
+
 
         public BigInteger Part1(string[] input)
         {
@@ -277,18 +271,29 @@ namespace Day5
         {
             var answer = 0;
             List<BigInteger> seeds = new List<BigInteger>();
-            var seedsRange = Regex.Matches(input[0], @"\d+").ToList().Select(x => BigInteger.Parse(x.Value)).ToList();
+            var seedsRange = Regex.Matches(input[0], @"\d+").ToList().Select(x => Int64.Parse(x.Value)).ToList();
 
-            var f = seedsRange.Count / 2;
+            var seedRanges = new List<SeedRange>();
+
             for(int c = 0; c < seedsRange.Count; c++)
             {
-                Console.WriteLine($"c: {c}");
-                for (BigInteger i = 0; i < seedsRange[c+1]; i++)
+                seedRanges.Add(new SeedRange()
                 {
-                    seeds.Add(seedsRange[c] + i);
-                }
+                    Start = seedsRange[c],
+                    End = seedsRange[c] + seedsRange[c + 1]
+                });
                 c++;
             }
+
+            //for(int c = 0; c < seedsRange.Count; c++)
+            //{
+            //    Console.WriteLine($"c: {c}");
+            //    for (BigInteger i = 0; i < seedsRange[c+1]; i++)
+            //    {
+            //        seeds.Add(seedsRange[c] + i);
+            //    }
+            //    c++;
+            //}
 
 
             for (int i = 1; i < input.Length; i++)
@@ -453,67 +458,72 @@ namespace Day5
                 }
             }
 
-            BigInteger lowest = -1;
-            foreach (var seed in seeds)
+            Int64 lowest = 0; //79874952
+
+            while (true)
             {
-                var nextVal = seed;
-
-                //var conv = seedToSoilConv.Where(x => )
-
-                //nextVal = seedToSoil.ContainsKey(nextVal) ? seedToSoil[nextVal] : nextVal;
-
-                var conv = seedToSoilConv.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
+                var seedNr = checkLocationToSeed(lowest);
+                if (seedRanges.Any(x => x.Start <= seedNr && seedNr <= x.End))
                 {
-                    nextVal += conv.destinationStart - conv.sourceStart;
+                    break;
                 }
-
-                conv = soilToFertilizer.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
+                else
                 {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-                conv = fertilizerToWater.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
-                {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-                conv = waterToLight.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
-                {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-                conv = lightToTemp.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
-                {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-                conv = tempToHumidity.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
-                {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-                conv = himidityToLocation.Where(x => (x.sourceStart <= nextVal) && (x.sourceStart + x.rangeLength) >= nextVal).FirstOrDefault();
-                if (conv != null)
-                {
-                    nextVal += conv.destinationStart - conv.sourceStart;
-                }
-
-
-                if (lowest == -1 || nextVal < lowest)
-                {
-                    lowest = nextVal;
+                    lowest++;
                 }
             }
 
             Console.WriteLine("LOWEST:");
             Console.WriteLine(lowest);
+            Console.ReadKey();
             return lowest;
+        }
+
+        public Int64 checkLocationToSeed(Int64 location)
+        {
+            var conv = himidityToLocation.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart ;
+            }
+
+            conv = tempToHumidity.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            conv = lightToTemp.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            conv = waterToLight.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            conv = fertilizerToWater.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            conv = soilToFertilizer.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            conv = seedToSoilConv.Where(x => (x.destinationStart + x.rangeLength) >= location && (x.destinationStart <= location)).FirstOrDefault();
+            if (conv != null)
+            {
+                location += conv.sourceStart - conv.destinationStart;
+            }
+
+            return location;
         }
     }
 }
