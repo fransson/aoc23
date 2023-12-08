@@ -132,190 +132,195 @@ namespace Day3
 
             foreach (var number in allNumbers)
             {
-                var sameLineAsterix = allAsterixs.Where(x =>
+                var sameLineAsterixs = allAsterixs.Where(x =>
                 x.LineNumber == number.LineNumber &&
                 (x.Index == number.IndexRangeStart - 1 || x.Index == number.IndexRangeEnd + 1)
-                ).FirstOrDefault();
+                ).ToList();
 
-                if (sameLineAsterix != null)
+                foreach(var sameLineAsterix in sameLineAsterixs)
                 {
-                    var numLeft = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == number.LineNumber && x.IndexRangeEnd == sameLineAsterix.Index-1).FirstOrDefault();
-                    if (numLeft != null)
+                    if (sameLineAsterix != null)
                     {
-                        
-                        if (numLeft.ConnectedToNumbervalue.HasValue && numLeft.ConnectedToNumbervalue.Value != number.Value)
+                        var numLeft = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == number.LineNumber && x.IndexRangeEnd == sameLineAsterix.Index - 1).FirstOrDefault();
+                        if (numLeft != null)
                         {
-                            number.Invalid = true;
-                           // numLeft.Invalid = true;
-                            var go = true;
-                            while (go)
+
+                            if (numLeft.ConnectedToNumbervalue.HasValue && numLeft.ConnectedToNumbervalue.Value != number.Value)
                             {
-                                if (numLeft.ConnectedToNumberId.HasValue && numLeft.Invalid == false)
+                                number.Invalid = true;
+                                // numLeft.Invalid = true;
+                                var go = true;
+                                while (go)
                                 {
-                                    numLeft.Invalid = true;
-                                    numLeft = allNumbers.Where(x => x.Id == numLeft.ConnectedToNumberId.Value).First();
-                                    
+                                    if (numLeft.ConnectedToNumberId.HasValue && numLeft.Invalid == false)
+                                    {
+                                        numLeft.Invalid = true;
+                                        numLeft = allNumbers.Where(x => x.Id == numLeft.ConnectedToNumberId.Value).First();
+
+                                    }
+                                    else
+                                    {
+                                        go = false;
+                                    }
                                 }
-                                else
+
+                            }
+                            else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numLeft.Value)
+                            {
+                                number.Invalid = true;
+                                numLeft.Invalid = true;
+                            }
+                            else
+                            {
+                                number.ConnectedToNumbervalue = numLeft.Value;
+                                number.ConnectedToNumberId = numLeft.Id;
+                                numLeft.ConnectedToNumbervalue = number.Value;
+                                numLeft.ConnectedToNumberId = number.Id;
+                            }
+                        }
+
+                        var numRight = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == number.LineNumber && x.IndexRangeStart == sameLineAsterix.Index + 1).FirstOrDefault();
+                        if (numRight != null)
+                        {
+                            if (numRight.ConnectedToNumbervalue.HasValue && numRight.ConnectedToNumbervalue.Value != number.Value)
+                            {
+                                number.Invalid = true;
+                                //numRight.Invalid = true;
+
+                                var go = true;
+                                while (go)
                                 {
-                                    go = false;
+                                    if (numRight.ConnectedToNumberId.HasValue && numRight.Invalid == false)
+                                    {
+                                        numRight.Invalid = true;
+                                        numRight = allNumbers.Where(x => x.Id == numRight.ConnectedToNumberId.Value).First();
+                                    }
+                                    else
+                                    {
+                                        go = false;
+                                    }
                                 }
+
+                            }
+                            else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numRight.Value)
+                            {
+                                number.Invalid = true;
+                                numRight.Invalid = true;
                             }
 
+                            number.ConnectedToNumbervalue = numRight.Value;
+                            number.ConnectedToNumberId = numRight.Id;
+                            numRight.ConnectedToNumbervalue = number.Value;
+                            numRight.ConnectedToNumberId = number.Id;
                         }
-                        else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numLeft.Value)
-                        {
-                            number.Invalid = true;
-                            numLeft.Invalid = true;
-                        }
-                        else
-                        {
-                            number.ConnectedToNumbervalue = numLeft.Value;
-                            number.ConnectedToNumberId = numLeft.Id;
-                            numLeft.ConnectedToNumbervalue = number.Value;
-                            numLeft.ConnectedToNumberId = number.Id;
-                        }
-                    }
-
-                    var numRight = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == number.LineNumber && x.IndexRangeStart == sameLineAsterix.Index + 1).FirstOrDefault();
-                    if (numRight != null)
-                    {
-                        if (numRight.ConnectedToNumbervalue.HasValue && numRight.ConnectedToNumbervalue.Value != number.Value)
-                        {
-                            number.Invalid = true;
-                            //numRight.Invalid = true;
-
-                            var go = true;
-                            while (go)
-                            {
-                                if (numRight.ConnectedToNumberId.HasValue && numRight.Invalid == false)
-                                {
-                                    numRight.Invalid = true;
-                                    numRight = allNumbers.Where(x => x.Id == numRight.ConnectedToNumberId.Value).First();
-                                }
-                                else
-                                {
-                                    go = false;
-                                }
-                            }
-
-                        }
-                        else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numRight.Value)
-                        {
-                            number.Invalid = true;
-                            numRight.Invalid = true;
-                        }
-
-                        number.ConnectedToNumbervalue = numRight.Value;
-                        number.ConnectedToNumberId = numRight.Id;
-                        numRight.ConnectedToNumbervalue = number.Value;
-                        numRight.ConnectedToNumberId = number.Id;
                     }
                 }
 
-                var asterixAbove = allAsterixs.Where(x =>
+                var asterixAboves = allAsterixs.Where(x =>
                     x.LineNumber == number.LineNumber - 1 &&
                     (number.IndexRangeStart - 1 <= x.Index && x.Index <= number.IndexRangeEnd+1)
-                    ).FirstOrDefault();
+                    ).ToList();
 
-                if (asterixAbove != null)
+                foreach(var asterixAbove in asterixAboves)
                 {
-                    var numAbove = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixAbove.LineNumber - 1 &&
-                    (x.IndexRangeEnd >= asterixAbove.Index - 1 && x.IndexRangeStart <= asterixAbove.Index + 1)
-                    //((x.IndexRangeStart == asterixAbove.Index - 1 || x.IndexRangeStart == asterixAbove.Index + 1) ||
-                    //(x.IndexRangeEnd == asterixAbove.Index - 1 || x.IndexRangeEnd == asterixAbove.Index + 1))
-                    ).FirstOrDefault();
-
-                    if (numAbove != null)
+                    if (asterixAbove != null)
                     {
-                        if (numAbove.ConnectedToNumbervalue.HasValue && numAbove.ConnectedToNumbervalue.Value != number.Value)
+                        var numAbove = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixAbove.LineNumber - 1 &&
+                        (x.IndexRangeEnd >= asterixAbove.Index - 1 && x.IndexRangeStart <= asterixAbove.Index + 1)
+                        //((x.IndexRangeStart == asterixAbove.Index - 1 || x.IndexRangeStart == asterixAbove.Index + 1) ||
+                        //(x.IndexRangeEnd == asterixAbove.Index - 1 || x.IndexRangeEnd == asterixAbove.Index + 1))
+                        ).FirstOrDefault();
+
+                        if (numAbove != null)
                         {
-                            number.Invalid = true;
-                            //numAbove.Invalid = true;
-                            var go = true;
-                            while (go)
+                            if (numAbove.ConnectedToNumbervalue.HasValue && numAbove.ConnectedToNumbervalue.Value != number.Value)
                             {
-                                if (numAbove.ConnectedToNumberId.HasValue && numAbove.Invalid == false)
+                                number.Invalid = true;
+                                //numAbove.Invalid = true;
+                                var go = true;
+                                while (go)
                                 {
-                                    numAbove.Invalid = true;
-                                    numAbove = allNumbers.Where(x => x.Id == numAbove.ConnectedToNumberId.Value).First();
+                                    if (numAbove.ConnectedToNumberId.HasValue && numAbove.Invalid == false)
+                                    {
+                                        numAbove.Invalid = true;
+                                        numAbove = allNumbers.Where(x => x.Id == numAbove.ConnectedToNumberId.Value).First();
+                                    }
+                                    else
+                                    {
+                                        go = false;
+                                    }
                                 }
-                                else
-                                {
-                                    go = false;
-                                }
+
+                            }
+                            else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numAbove.Value)
+                            {
+                                number.Invalid = true;
+                                numAbove.Invalid = true;
                             }
 
-                        }
-                        else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numAbove.Value)
-                        {
-                            number.Invalid = true;
-                            numAbove.Invalid = true;
-                        }
+                            number.ConnectedToNumbervalue = numAbove.Value;
+                            numAbove.ConnectedToNumbervalue = number.Value;
 
-                        number.ConnectedToNumbervalue = numAbove.Value;
-                        numAbove.ConnectedToNumbervalue = number.Value;
-
-                        number.ConnectedToNumberId = numAbove.Id;
-                        numAbove.ConnectedToNumberId = number.Id;
+                            number.ConnectedToNumberId = numAbove.Id;
+                            numAbove.ConnectedToNumberId = number.Id;
+                        }
                     }
                 }
-
-
-
-
-                var asterixUnder = allAsterixs.Where(x =>
+                
+                var asterixUnders = allAsterixs.Where(x =>
                     x.LineNumber == number.LineNumber + 1 &&
                     (number.IndexRangeStart - 1 <= x.Index && x.Index <= number.IndexRangeEnd+1)
-                    ).FirstOrDefault();
+                    ).ToList();
 
-                if (asterixUnder != null)
+                foreach(var asterixUnder in asterixUnders)
                 {
-                    var numUnder = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixUnder.LineNumber + 1 &&
-                    (x.IndexRangeEnd >= asterixUnder.Index - 1 &&  x.IndexRangeStart <= asterixUnder.Index +1)    
-
-                    //((x.IndexRangeStart -1 <= asterixUnder.Index || x.IndexRangeStart +1 <= asterixUnder.Index + 1) ||
-                    //(x.IndexRangeEnd == asterixUnder.Index - 1 || x.IndexRangeEnd == asterixUnder.Index + 1))
-                    ).FirstOrDefault();
-
-                    if (numUnder != null)
+                    if (asterixUnder != null)
                     {
-                        if (numUnder.ConnectedToNumbervalue.HasValue && numUnder.ConnectedToNumbervalue.Value != number.Value)
-                        {
-                            number.Invalid = true;
-                            //numUnder.Invalid = true;
+                        var numUnder = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixUnder.LineNumber + 1 &&
+                        (x.IndexRangeEnd >= asterixUnder.Index - 1 && x.IndexRangeStart <= asterixUnder.Index + 1)
 
-                            var go = true;
-                            while (go)
+                        //((x.IndexRangeStart -1 <= asterixUnder.Index || x.IndexRangeStart +1 <= asterixUnder.Index + 1) ||
+                        //(x.IndexRangeEnd == asterixUnder.Index - 1 || x.IndexRangeEnd == asterixUnder.Index + 1))
+                        ).FirstOrDefault();
+
+                        if (numUnder != null)
+                        {
+                            if (numUnder.ConnectedToNumbervalue.HasValue && numUnder.ConnectedToNumbervalue.Value != number.Value)
                             {
-                                if (numUnder.ConnectedToNumberId.HasValue && numUnder.Invalid == false)
+                                number.Invalid = true;
+                                //numUnder.Invalid = true;
+
+                                var go = true;
+                                while (go)
                                 {
-                                    numUnder.Invalid = true;
-                                    numUnder = allNumbers.Where(x => x.Id == numUnder.ConnectedToNumberId.Value).First();
+                                    if (numUnder.ConnectedToNumberId.HasValue && numUnder.Invalid == false)
+                                    {
+                                        numUnder.Invalid = true;
+                                        numUnder = allNumbers.Where(x => x.Id == numUnder.ConnectedToNumberId.Value).First();
+                                    }
+                                    else
+                                    {
+                                        go = false;
+                                    }
                                 }
-                                else
-                                {
-                                    go = false;
-                                }
+
+                            }
+                            else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numUnder.Value)
+                            {
+                                number.Invalid = true;
+                                numUnder.Invalid = true;
                             }
 
-                        }
-                        else if (number.ConnectedToNumbervalue.HasValue && number.ConnectedToNumbervalue.Value != numUnder.Value)
-                        {
-                            number.Invalid = true;
-                            numUnder.Invalid = true;
-                        }
+                            number.ConnectedToNumbervalue = numUnder.Value;
+                            numUnder.ConnectedToNumbervalue = number.Value;
 
-                        number.ConnectedToNumbervalue = numUnder.Value;
-                        numUnder.ConnectedToNumbervalue = number.Value;
+                            number.ConnectedToNumberId = numUnder.Id;
+                            numUnder.ConnectedToNumberId = number.Id;
 
-                        number.ConnectedToNumberId = numUnder.Id;
-                        numUnder.ConnectedToNumberId = number.Id;
+                        }
 
                     }
-
                 }
-
             }
 
             List<Guid> seenIds = new List<Guid>();
@@ -335,5 +340,7 @@ namespace Day3
             answer = finalValues.Sum();
             return answer;
         }
+
+      
     }
 }
