@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Day3
 {
@@ -23,6 +24,7 @@ namespace Day3
     {
         public int Index { get; set; }
         public int LineNumber { get; set; }
+        public List<xNumber> Numbers { get; set; } = new List<xNumber>();
     }
 
     public class Day3
@@ -91,9 +93,7 @@ namespace Day3
         }
 
 
-
-
-        public int Part2(string[] input)
+        public int F(string[] input)
         {
             var answer = 0;
             var allNumbers = new List<xNumber>();
@@ -227,8 +227,6 @@ namespace Day3
                     {
                         var numAbove = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixAbove.LineNumber - 1 &&
                         (x.IndexRangeEnd >= asterixAbove.Index - 1 && x.IndexRangeStart <= asterixAbove.Index + 1)
-                        //((x.IndexRangeStart == asterixAbove.Index - 1 || x.IndexRangeStart == asterixAbove.Index + 1) ||
-                        //(x.IndexRangeEnd == asterixAbove.Index - 1 || x.IndexRangeEnd == asterixAbove.Index + 1))
                         ).FirstOrDefault();
 
                         if (numAbove != null)
@@ -236,7 +234,6 @@ namespace Day3
                             if (numAbove.ConnectedToNumbervalue.HasValue && numAbove.ConnectedToNumbervalue.Value != number.Value)
                             {
                                 number.Invalid = true;
-                                //numAbove.Invalid = true;
                                 var go = true;
                                 while (go)
                                 {
@@ -278,9 +275,6 @@ namespace Day3
                     {
                         var numUnder = allNumbers.Where(x => x.Id != number.Id && x.LineNumber == asterixUnder.LineNumber + 1 &&
                         (x.IndexRangeEnd >= asterixUnder.Index - 1 && x.IndexRangeStart <= asterixUnder.Index + 1)
-
-                        //((x.IndexRangeStart -1 <= asterixUnder.Index || x.IndexRangeStart +1 <= asterixUnder.Index + 1) ||
-                        //(x.IndexRangeEnd == asterixUnder.Index - 1 || x.IndexRangeEnd == asterixUnder.Index + 1))
                         ).FirstOrDefault();
 
                         if (numUnder != null)
@@ -288,8 +282,6 @@ namespace Day3
                             if (numUnder.ConnectedToNumbervalue.HasValue && numUnder.ConnectedToNumbervalue.Value != number.Value)
                             {
                                 number.Invalid = true;
-                                //numUnder.Invalid = true;
-
                                 var go = true;
                                 while (go)
                                 {
@@ -316,9 +308,7 @@ namespace Day3
 
                             number.ConnectedToNumberId = numUnder.Id;
                             numUnder.ConnectedToNumberId = number.Id;
-
                         }
-
                     }
                 }
             }
@@ -341,6 +331,80 @@ namespace Day3
             return answer;
         }
 
-      
+        public int Part2(string[] input)
+        {
+            var answer = 0;
+            var allNumbers = new List<xNumber>();
+            var allAsterixs = new List<Asterix>();
+
+            var finalValues = new List<int>();
+
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                var line = input[i];
+                var numbers = Regex.Matches(line, @"\d+").ToList();
+                var asterixs = Regex.Matches(line, @"\*").ToList();
+
+                foreach (var n in numbers)
+                {
+                    allNumbers.Add(new xNumber()
+                    {
+                        LineNumber = i,
+                        IndexRangeStart = n.Index,
+                        IndexRangeEnd = n.Index + n.Length - 1,
+                        Value = Int32.Parse(n.Value),
+                        Id = Guid.NewGuid()
+                    });
+                }
+
+                foreach (var asterix in asterixs)
+                {
+                    allAsterixs.Add(new Asterix
+                    {
+                        LineNumber = i,
+                        Index = asterix.Index
+                    });
+                }
+            }
+            foreach(var asterix in allAsterixs)
+            {
+                var numLeft = allNumbers.Where(x => x.LineNumber == asterix.LineNumber && x.IndexRangeEnd == asterix.Index - 1).FirstOrDefault();
+                var numRight = allNumbers.Where(x =>  x.LineNumber == asterix.LineNumber && x.IndexRangeStart == asterix.Index + 1).FirstOrDefault();
+
+                var numAboves = allNumbers.Where(x =>  x.LineNumber == asterix.LineNumber - 1 &&
+                        (x.IndexRangeEnd >= asterix.Index - 1 && x.IndexRangeStart <= asterix.Index + 1)
+                        ).ToList();
+
+                var numUnders = allNumbers.Where(x => x.LineNumber == asterix.LineNumber + 1 &&
+                        (x.IndexRangeEnd >= asterix.Index - 1 && x.IndexRangeStart <= asterix.Index + 1)
+                        ).ToList();
+
+                if(numLeft != null)
+                {
+                    asterix.Numbers.Add(numLeft);
+                }
+                if(numRight != null)
+                {
+                    asterix.Numbers.Add(numRight);
+                }
+                foreach(var numAbove in numAboves)
+                {
+                    asterix.Numbers.Add(numAbove);
+                }
+                foreach (var numUnder in numUnders)
+                {
+                    asterix.Numbers.Add(numUnder);
+                }
+            }
+
+            foreach(var ast in allAsterixs.Where(x => x.Numbers.Count == 2))
+            {
+                finalValues.Add(ast.Numbers[0].Value * ast.Numbers[1].Value);
+            }
+
+            answer = finalValues.Sum();
+            return answer;
+        }
     }
 }
