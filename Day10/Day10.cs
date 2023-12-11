@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -36,6 +37,7 @@ namespace Day10
         public int CoordinateY { get; set; }
         public char Value { get; set; }
         public bool Visited { get; set; } = false;
+        public bool Inside { get; set; } = false;
 
     }
 
@@ -129,6 +131,11 @@ namespace Day10
 
                     case 'L':
                         {
+                            if (node.CoordinateY == 3)
+                            {
+
+                            }
+
                             //  kolla uppåt och höger
                             var nodeAbove = graph.Nodes.Where(x => x.CoordinateX == node.CoordinateX && x.CoordinateY == node.CoordinateY - 1).FirstOrDefault();
                             if (nodeAbove != null && (nodeAbove.Value == 'F' || nodeAbove.Value == '7' || nodeAbove.Value == '|' || nodeAbove.Value == 'S'))
@@ -259,7 +266,7 @@ namespace Day10
                             var nodeBelow = graph.Nodes.Where(x => x.CoordinateX == node.CoordinateX && x.CoordinateY == node.CoordinateY + 1).FirstOrDefault();
                             var nodeRight = graph.Nodes.Where(x => x.CoordinateX == node.CoordinateX + 1 && x.CoordinateY == node.CoordinateY).FirstOrDefault();
                             var nodeLeft = graph.Nodes.Where(x => x.CoordinateX == node.CoordinateX - 1 && x.CoordinateY == node.CoordinateY).FirstOrDefault();
-                            if (nodeAbove != null && nodeAbove.Value != '.')
+                            if (nodeAbove != null && (nodeAbove.Value == 'F' || nodeAbove.Value == '7' || nodeAbove.Value == '|'))
                             {
                                 //if (!graph.Links.Any(x => (x.Node1 == node && x.Node2 == nodeAbove) || (x.Node1 == nodeAbove && x.Node2 == node)))
                                // {
@@ -270,7 +277,7 @@ namespace Day10
                                     });
                                // }
                             }
-                            if (nodeBelow != null && nodeBelow.Value != '.')
+                            if (nodeBelow != null && (nodeBelow.Value == 'L' || nodeBelow.Value == 'J' || nodeBelow.Value == '|'))
                             {
                                 //if (!graph.Links.Any(x => (x.Node1 == node && x.Node2 == nodeBelow) || (x.Node1 == nodeBelow && x.Node2 == node)))
                                 //{
@@ -281,7 +288,7 @@ namespace Day10
                                     });
                                 //}
                             }
-                            if (nodeRight != null && nodeRight.Value != '.')
+                            if (nodeRight != null && (nodeRight.Value == '7' || nodeRight.Value == 'J' || nodeRight.Value == '-'))
                             {
                                 //if (!graph.Links.Any(x => (x.Node1 == node && x.Node2 == nodeRight) || (x.Node1 == nodeRight && x.Node2 == node)))
                                 //{
@@ -292,7 +299,7 @@ namespace Day10
                                     });
                                 //}
                             }
-                            if (nodeLeft != null && nodeLeft.Value != '.')
+                            if (nodeLeft != null && (nodeLeft.Value == 'L' || nodeLeft.Value == '-' || nodeLeft.Value == 'F'))
                             {
                                 //if (!graph.Links.Any(x => (x.Node1 == node && x.Node2 == nodeLeft) || (x.Node1 == nodeLeft && x.Node2 == node)))
                                // {
@@ -315,6 +322,7 @@ namespace Day10
         {
             var path = new List<Link>();
             var sNode = graph.Nodes.Where(x => x.Value == 'S').First();
+            //var sNode = graph.Nodes.Where(x => x.CoordinateX == 12 && x.CoordinateY == 4).First();
 
             var link = graph.Links.Where(x => x.Source == sNode).FirstOrDefault();
             path.Add(link);
@@ -323,7 +331,15 @@ namespace Day10
             int i = 0;
             while (link != null && link.Target.Value != 'S')
             {
-                link = graph.Links.Where(x => x.Source == sNode && x.Target.Visited == false).FirstOrDefault();
+                if (i == 0)
+                {
+                    link = graph.Links.Where(x => x.Source == sNode && x.Target.Visited == false && x.Target.Value != 'S').FirstOrDefault();
+                    i++;
+                }
+                else
+                {
+                    link = graph.Links.Where(x => x.Source == sNode && x.Target.Visited == false).FirstOrDefault();
+                }
                 if (link != null)
                 {
                     path.Add(link);
@@ -348,8 +364,143 @@ namespace Day10
             var graph = GetGraph(input);
             var path = GetLoop(graph);
 
-            var s = path.Where(x => x.Target.Value == 'S').FirstOrDefault();
-            return 0;
+            bool isIn = false;
+            int tileCounter = 0;
+
+            foreach(var line in input)
+            {
+                isIn = false;
+                for(int i = 0; i < line.Length; i++)
+                {
+                    if (line[i] == '|' || line[i] == 'J' || line[i] == 'L' || line[i] == 'S' /*|| line[i] == 'F' || line[i] == '7'*/)
+                    {
+                        isIn = !isIn;
+                        continue;
+                    }
+                    if (isIn)
+                    {
+                        tileCounter++;
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+            var allPathTargetNodes = path.Select(x => x.Target).ToList();
+            var allPathSourceNodes = path.Select(x => x.Source).ToList();
+            
+            var nodesNotInPath = graph.Nodes.Where(x =>
+            (!allPathTargetNodes.Contains(x) && !allPathSourceNodes.Contains(x))
+            ).ToList();
+
+            var graphMaxLength = graph.Nodes.OrderByDescending(x => x.CoordinateX).Select(x => x.CoordinateX).FirstOrDefault();
+            foreach(var node in nodesNotInPath)
+            {
+
+               
+
+                if (node.CoordinateX == 8 && node.CoordinateY == 4)
+                {
+
+                }
+                if (node.CoordinateX == 9 && node.CoordinateY == 4)
+                {
+
+                }
+                if (node.CoordinateX == 10 && node.CoordinateY == 4)
+                {
+
+                }
+
+                if (node.CoordinateX == 14 && node.CoordinateY == 3)
+                {
+
+                }
+                if (node.CoordinateX == 14 && node.CoordinateY == 6)
+                {
+
+                }
+                if (node.CoordinateX == 6 && node.CoordinateY == 6)
+                {
+
+                }
+                if (node.CoordinateX == 7 && node.CoordinateY == 5)
+                {
+
+                }
+                if (node.CoordinateX == 8 && node.CoordinateY == 5)
+                {
+
+                }
+                //var pathsToLeft = path.Where(x => x.Source.CoordinateX < node.CoordinateX && x.Source.CoordinateY == node.CoordinateY).Count();
+                //var pathsToRight = path.Where(x => x.Source.CoordinateX > node.CoordinateX && x.Source.CoordinateY == node.CoordinateY).Count();
+                //var pathsUp = path.Where(x => x.Source.CoordinateX == node.CoordinateX && x.Source.CoordinateY < node.CoordinateY).Count();
+                //var pathsUnder = path.Where(x => x.Source.CoordinateX == node.CoordinateX && x.Source.CoordinateY > node.CoordinateY).Count();
+
+                //if(pathsToLeft % 2 != 0 && pathsToRight % 2 != 0 && pathsUp % 2 != 0  && pathsUnder % 2 != 0)
+                //{
+                //    node.Inside = true;
+                //}
+
+                //var startY = node.CoordinateY;
+                //var startX = node.CoordinateX;
+                //var pathsFound = 0;
+
+                //while (startY > 0 && startX < graphMaxLength)
+                //{
+                //    var pathNodeUpperRight = path.Where(x => x.Source.CoordinateX == startX + 1 && x.Source.CoordinateY == startY - 1).FirstOrDefault();
+                //    if (pathNodeUpperRight != null && graph.Links.Any(x => x.Target == pathNodeUpperRight.Source && x.Source == pathNodeUpperRight.Target))
+                //    {
+                //        pathsFound++;
+                //    }
+                //    startX++;
+                //    startY--;
+                //}
+
+                //if (pathsFound % 2 != 0)
+                //{
+                //    node.Inside = true;
+                //}
+                //var p = path.Where(x => (x.Source.CoordinateX < node.CoordinateX && x.Source.CoordinateY == node.CoordinateY) ||
+                //(x.Target.CoordinateX < node.CoordinateX && x.Target.CoordinateY == node.CoordinateY)
+                //).ToList();
+
+                //var a = path.Where(x => x.Source.CoordinateX == 15 && x.Source.CoordinateY == 3).FirstOrDefault();
+                //var b = path.Where(x => x.Target.CoordinateX == 15 && x.Target.CoordinateY == 3).FirstOrDefault();
+
+                var pathsToLeft = path.Where(x => x.Source.CoordinateX < node.CoordinateX && x.Source.CoordinateY == node.CoordinateY 
+                ).ToList();
+                var pathsToRight = path.Where(x => x.Source.CoordinateX > node.CoordinateX && x.Source.CoordinateY == node.CoordinateY).ToList();
+                var pathsUp = path.Where(x => x.Source.CoordinateX == node.CoordinateX && x.Source.CoordinateY < node.CoordinateY ).ToList();
+                var pathsUnder = path.Where(x => x.Source.CoordinateX == node.CoordinateX && x.Source.CoordinateY > node.CoordinateY ).ToList();
+
+                if (pathsToLeft.Count == 0 || pathsToRight.Count == 0 || pathsUp.Count == 0 || pathsUnder.Count == 0)
+                {
+                    continue;
+                }
+
+                if (pathsToLeft.Count % 2 != 0 || pathsToRight.Count % 2 != 0)
+                {
+                    node.Inside = true;
+                }
+
+                else if (pathsUp.Count % 2 != 0 || pathsUnder.Count % 2 != 0)
+                {
+                    node.Inside = true;
+                }
+
+            }
+
+            var f = nodesNotInPath.Where(x => x.Inside == true).Count()-1;
+
+            return f;
         }
     }
 }
