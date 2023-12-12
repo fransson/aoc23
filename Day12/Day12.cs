@@ -7,36 +7,37 @@ using System.Threading.Tasks;
 
 namespace Day12
 {
-    public  class Day12
+    public static class Day12
     {
-        public class SpringLine
+      
+        public class History
         {
-            public List<Node> Nodes = new List<Node>();
-            public List<int> Numbers = new List<int>();
-            public int LineNumber { get; set; }
+            public int i { get; set; }
+            public char[] springs { get; set; }
+            public List<int> numbers { get; set; }
         }
-        public class Node
+        //public Int64 matchingPatterns = 0;
+
+        public static List<string> PatternMatched = new List<string>();
+
+        public static Int64 Part1(string[] input)
         {
-            public int Position { get; set; }
-            public char Value { get; set; }
-        }
-        public Int64 matchingPatterns = 0;
 
-        public List<string> PatternMatched = new List<string>();
+            var matchingPatterns = 0;
 
-        public Int64 Part1(string[] input)
-        {
-            var lines = new List<SpringLine>();
+            Func<History, int> fibonacci = LoopThroughString;
+            var fibonacciMemoized = fibonacci.Memoize();
 
 
-            foreach(var line in input)
+            foreach (var line in input)
             {
                 var splittedLine = line.Split(' ');
                 var springs = splittedLine[0].ToCharArray();
                 var numbers = splittedLine[1].Split(',').Select(x => Int32.Parse(x)).ToList();
 
-                
-                LoopThroughString(0, springs, numbers);
+                var his = new History() { i = 0, springs = springs, numbers = numbers };
+
+                matchingPatterns += fibonacciMemoized(his);
                 PatternMatched.Clear();
             }
 
@@ -44,34 +45,57 @@ namespace Day12
         }
 
 
-        public void LoopThroughString(int i, char[] springs, List<int> numbers)
+        public static int LoopThroughString(History hist)
         {
-            for (; i < springs.Length; i++)
-            {
-                char[] copySprings = new char[springs.Length];
-                Array.Copy(springs, copySprings, springs.Length);
+            var matchingpatrn = 0;
+            Func<History, int> fibonacci = LoopThroughString;
+            var fibonacciMemoized = fibonacci.Memoize();
 
-                var c = copySprings[i];
+            for (; hist.i < hist.springs.Length; hist.i++)
+            {
+                char[] copySprings = new char[hist.springs.Length];
+                Array.Copy(hist.springs, copySprings, hist.springs.Length);
+
+                var c = copySprings[hist.i];
                 if (c == '?')
                 {
-                    copySprings[i] = '.';
-                    if(CheckPatternMatch(copySprings, numbers))
+                    copySprings[hist.i] = '.';
+                    if(CheckPatternMatch(copySprings, hist.numbers))
                     {
-                        matchingPatterns++;
+                        matchingpatrn++;
                     }
-                    LoopThroughString(i+1, copySprings, numbers);
+                    //matchingpatrn += LoopThroughString(i+1, copySprings, hist.numbers);
+                    matchingpatrn += fibonacciMemoized(new History() { i = hist.i + 1, springs = copySprings, numbers = hist.numbers });
 
-                    copySprings[i] = '#';
-                    if(CheckPatternMatch(copySprings, numbers))
+                    copySprings[hist.i] = '#';
+                    if(CheckPatternMatch(copySprings, hist.numbers))
                     {
-                        matchingPatterns++;
+                        matchingpatrn++;
                     }
-                    LoopThroughString(i + 1, copySprings, numbers);
+                    //matchingpatrn += LoopThroughString(i + 1, copySprings, hist.numbers);
+                    matchingpatrn += fibonacciMemoized(new History() { i = hist.i + 1, springs = copySprings, numbers = hist.numbers });
                 }
             }
+            return matchingpatrn;
         }
 
-        public bool CheckPatternMatch(char[] springs, List<int> numbers)
+
+        public static Func<T, TResult> Memoize<T, TResult>(this Func<T, TResult> func)
+        {
+            var t = new Dictionary<T, TResult>();
+            return (n) =>
+            {
+                
+                if (t.ContainsKey(n)) return t[n];
+
+                var result = func(n);
+                t.Add(n, result);
+                return result;
+            };
+        }
+
+
+        public static bool CheckPatternMatch(char[] springs, List<int> numbers)
         {
             if(springs.Contains('?'))
             {
@@ -99,11 +123,12 @@ namespace Day12
             return false;
         }
 
-        public Int64 Part2(string[] input)
+        public static Int64 Part2(string[] input)
         {
+            Int64 matchingPatterns = 0;
 
-            var lines = new List<SpringLine>();
-            Console.WriteLine($"ANSWER: {matchingPatterns}");
+            Func<History, int> fibonacci = LoopThroughString;
+            var fibonacciMemoized = fibonacci.Memoize();
 
             foreach (var line in input)
             {
@@ -122,7 +147,9 @@ namespace Day12
                     }
                     newNumbers.AddRange(numbers);
                 }
-                LoopThroughString(0, newSprings.ToArray(), newNumbers);
+                var his = new History() { i = 0, springs = newSprings.ToArray(), numbers = newNumbers };
+
+                matchingPatterns += fibonacciMemoized(his);
                 PatternMatched.Clear();
                 Console.WriteLine("Line complete...");
             }
